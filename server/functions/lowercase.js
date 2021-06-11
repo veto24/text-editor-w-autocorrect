@@ -1,0 +1,1 @@
+const lowercase = word => word.
