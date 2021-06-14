@@ -6,7 +6,7 @@ const transposes = require('./transposer');
 const unique = require('./unique');
 
 const edits = (word) => {
-  // 1 edit awat from 'word'
+  // 1 edit away from 'word'
   const splits = splitter(word);
   return [
     ...deletes(splits),
