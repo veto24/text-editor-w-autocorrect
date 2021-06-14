@@ -64,7 +64,6 @@ fs.readFile('./big.txt', 'utf8', (err, data) => {
     const corrections = {}; // key value pair which will contain results
 
     mispelled.forEach((word) => {
-      // tatt - watt
       const firstEdits = edits(word); // words 1 edit away from 'word'
       const secondEdits = firstEdits.flatMap(edits); // words 2 edits away from 'word'
 
