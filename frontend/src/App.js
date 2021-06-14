@@ -18,6 +18,8 @@ import JustifyIcon from '@material-ui/icons/FormatAlignJustifySharp';
 import StrikethroughIcon from '@material-ui/icons/StrikethroughSSharp';
 import ColorTextIcon from '@material-ui/icons/FormatColorTextSharp';
 import { ChromePicker } from 'react-color';
+import Loading from 'react-loading';
+const { ipcRenderer } = window.require('electron');
 
 const theme = createMuiTheme({
   palette: {
@@ -49,19 +51,24 @@ function App() {
   const [textColor, setTextColor] = useState('#000');
 
   const fetchCorrections = async () => {
-    await fetch('http://localhost:3001/api/corrections', {
-      method: 'POST',
-      body: JSON.stringify({ text: contentRef.current.innerText }),
-      headers: {
-        'Content-type': 'application/json',
-      },
-    })
-      .then((response) => response.json())
+    await (
+      await fetch('http://localhost:3001/api/corrections', {
+        method: 'POST',
+        body: JSON.stringify({ text: contentRef.current.innerText }),
+        headers: {
+          'Content-type': 'application/json',
+        },
+      })
+    )
+      .json()
       .then((data) => setCorrections(data))
-      .then(setTimeout(fetchCorrections, 2000));
+      .then(setTimeout(fetchCorrections, 1000));
   };
 
   useEffect(() => {
+    ipcRenderer.on('open-file-data', (event, data) => {
+      contentRef.current.innerHTML = data;
+    });
     fetchCorrections();
   }, []);
 
@@ -181,6 +188,14 @@ function App() {
                       </Button>
                     );
                   })}
+              <div className='Loading'>
+                <Loading
+                  type='spinningBubbles'
+                  color='white'
+                  height={50}
+                  width={40}
+                />
+              </div>
             </div>
           </div>
         </div>
