@@ -1,4 +1,4 @@
-const { app, BrowserWindow, dialog, Menu } = require('electron');
+const { app, BrowserWindow, dialog, Menu, ipcMain } = require('electron');
 const fs = require('fs');
 
 const path = require('path'),
@@ -7,7 +7,11 @@ const path = require('path'),
 let mainWindow;
 
 const createWindow = () => {
-  mainWindow = new BrowserWindow({ width: 480, height: 320 });
+  mainWindow = new BrowserWindow({
+    width: 480,
+    height: 320,
+    webPreferences: { nodeIntegration: true, contextIsolation: false },
+  });
   const appUrl = isDev
     ? 'http://localhost:3000'
     : `file://${path.join(__dirname, '../build/index.html')}`;
@@ -123,5 +127,5 @@ function openFile() {
   if (!files) return;
   const file = files[0];
   const fileContent = fs.readFileSync(file).toString();
-  console.log(fileContent);
+  mainWindow.webContents.send('open-file-data', fileContent);
 }
