@@ -30,6 +30,13 @@ const createWindow = () => {
             openFile();
           },
         },
+        {
+          label: 'Save As',
+          accelerator: 'CmdOrCtrl+S',
+          click() {
+            saveFile();
+          },
+        },
       ],
     },
     {
@@ -120,6 +127,7 @@ app.on('activate', () => {
 
 function openFile() {
   const files = dialog.showOpenDialogSync(mainWindow, {
+    title: 'Select file to open',
     properties: ['openFile'],
     filters: [{ name: 'Text', extensions: ['txt'] }],
   });
@@ -129,3 +137,22 @@ function openFile() {
   const fileContent = fs.readFileSync(file).toString();
   mainWindow.webContents.send('open-file-data', fileContent);
 }
+
+function saveFile() {
+  mainWindow.webContents.send('save-file-request');
+}
+
+ipcMain.on('save-file-contents', (event, content) => {
+  const file = dialog.showSaveDialogSync(mainWindow, {
+    title: 'Select file path to save',
+    defaultPath: path.join(__dirname, '../.txt'),
+    buttonLabel: 'Save',
+    filters: [{ name: 'Text', extensions: ['txt'] }],
+  });
+
+  if (file) {
+    fs.writeFile(file, content, (err) => {
+      if (err) throw err;
+    });
+  }
+});
