@@ -5,6 +5,7 @@ const path = require('path'),
   isDev = require('electron-is-dev');
 
 let mainWindow;
+let currentFile;
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
@@ -31,10 +32,17 @@ const createWindow = () => {
           },
         },
         {
-          label: 'Save As',
+          label: 'Save',
           accelerator: 'CmdOrCtrl+S',
           click() {
             saveFile();
+          },
+        },
+        {
+          label: 'Save As',
+          accelerator: 'F12',
+          click() {
+            saveAs();
           },
         },
       ],
@@ -134,21 +142,40 @@ function openFile() {
 
   if (!files) return;
   const file = files[0];
+  currentFile = file;
   const fileContent = fs.readFileSync(file).toString();
+  currentFile = file;
   mainWindow.webContents.send('open-file-data', fileContent);
 }
 
-function saveFile() {
-  mainWindow.webContents.send('save-file-request');
+function saveRequest(newFile = false) {
+  mainWindow.webContents.send('save-file-request', newFile);
 }
 
-ipcMain.on('save-file-contents', (event, content) => {
-  const file = dialog.showSaveDialogSync(mainWindow, {
-    title: 'Select file path to save',
-    defaultPath: path.join(__dirname, '../.txt'),
-    buttonLabel: 'Save',
-    filters: [{ name: 'Text', extensions: ['txt'] }],
-  });
+function saveFile() {
+  if (currentFile) {
+    saveRequest();
+  } else {
+    saveAs();
+  }
+}
+
+function saveAs() {
+  saveRequest(true);
+}
+
+ipcMain.on('save-file-contents', (event, { content, newFile }) => {
+  let file;
+  if (newFile) {
+    file = dialog.showSaveDialogSync(mainWindow, {
+      title: 'Select file path to save',
+      defaultPath: path.join(__dirname, '../.txt'),
+      buttonLabel: 'Save',
+      filters: [{ name: 'Text', extensions: ['txt'] }],
+    });
+  } else {
+    file = currentFile;
+  }
 
   if (file) {
     fs.writeFile(file, content, (err) => {
