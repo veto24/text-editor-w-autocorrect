@@ -69,8 +69,11 @@ function App() {
     ipcRenderer.on('open-file-data', (event, data) => {
       contentRef.current.innerHTML = data;
     });
-    ipcRenderer.on('save-file-request', () => {
-      ipcRenderer.send('save-file-contents', contentRef.current.innerHTML);
+    ipcRenderer.on('save-file-request', (event, newFile) => {
+      ipcRenderer.send('save-file-contents', {
+        content: contentRef.current.innerHTML,
+        newFile,
+      });
     });
     fetchCorrections();
   }, []);
